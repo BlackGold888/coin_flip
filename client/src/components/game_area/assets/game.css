@@ -1,0 +1,89 @@
+#game {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 80%;
+    height: 60%;
+    display: flex;
+    flex-direction: column;
+    background-color: #262837;
+    overflow-x: hidden;
+    overflow-y: scroll;
+
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+
+}
+
+.game-header {
+    background-color: #d9d9d9;
+    padding: 20px;
+    width: 60%;
+}
+
+.player-info {
+    background-color: #d9d9d9;
+    padding: 20px;
+    width: 30%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.game-nav{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 20px;
+}
+.bet-input, .btn.bet{
+    height: 40px;
+    padding: 5px;
+    border-radius: 10px;
+    margin: 5px;
+}
+
+
+.rooms-list{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 20px;
+    width: 100%;
+    list-style: none;
+}
+
+.rooms-item{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    width: 30%;
+    border-bottom: 1px solid #9293a7;
+    background-color: #9293a7;
+    margin: 10px;
+}
+
+.room-logo{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #d9d9d9;
+}
+
+.owner{
+    display: flex;
+    flex-direction: column;
+}
