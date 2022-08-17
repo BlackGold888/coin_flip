@@ -14,5 +14,6 @@ export class Player {
         this.id = id;
         this.roomId = null;
         this.room = null;
+        this.isReady = false;
     }
 }

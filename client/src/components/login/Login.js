@@ -10,5 +10,4 @@ function Login({ changeName, login }) {
         </div>
     );
 }
-
 export default Login;

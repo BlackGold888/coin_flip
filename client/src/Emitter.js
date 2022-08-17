@@ -4,12 +4,13 @@ class Emitter {
         this.events = {};
     }
 
-    on(eventName, callback){
+    on(eventName, callback) {
+        console.log('on', eventName);
         this.events[eventName] = this.events[eventName] || [];
         this.events[eventName].push(callback);
     }
 
-    emit(eventName, payload){
+    emit(eventName, payload) {
         this.events[eventName] = this.events[eventName] || [];
         this.events[eventName].forEach(callback => callback(payload));
     }
@@ -17,4 +18,4 @@ class Emitter {
 
 const emitter = new Emitter();
 
-export { emitter }
+export { emitter };
