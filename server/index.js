@@ -16,14 +16,11 @@ app.post('/savePlayer', (req, res) => {
     const { name } = req.body;
     if (players.has(name)) {
         res.status(200).json(players.get(name));
-        console.log('Player already exists');
         return;
     }
 
-    console.log('ssssssssss');
     const player = new Player(name, 10000, 0, players.size);
     players.set(name, player);
-    console.log(player);
     res.status(200).json(players.get(name));
 });
 
