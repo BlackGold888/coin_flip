@@ -16,7 +16,6 @@ function GameArea({ player, setPlayer, socket }) {
     const [opponent, setOpponent] = useState(null);
 
     const changeBet = (e) => setPlayer({ ...player, bet: e.target.value });
-    const changeBalance = (balance) => setPlayer({ ...player, balance });
 
     const createRoom = () => {
         let newRoom = {

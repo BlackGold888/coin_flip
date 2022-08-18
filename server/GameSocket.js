@@ -20,6 +20,16 @@ export class GameSocket {
         player.on('close', () => {
             const playerData = this.players.get(player.name);
             const rooms = this.rooms.filter(room => room.id !== playerData.id);
+            const room = this.rooms.filter(room => room.id == playerData.id);
+
+            if (room.players > 1) {
+                room.players.forEach(playerName => {
+                    let target = this.players.get(playerName);
+                    this.clientNotify(target.handle, 'Room Owner Disconnected', false);
+                    this.stopGame(target)
+                })
+            }
+
             this.rooms = [...rooms];
             if (this.players.has(player.name)) {
                 this.players.delete(playerData.name);
@@ -67,9 +77,15 @@ export class GameSocket {
     createRoom = (player, data) => {
         const { id, bet } = data;
         const isRoomExist = this.rooms.find(room => room.id === id || room.players.includes(player.name));
+        const playerData = this.players.get(player.name);
 
         if (isRoomExist) {
             this.clientNotify(player, 'You are already in room', false);
+            return;
+        }
+
+        if(playerData.balance < bet){
+            this.clientNotify(player, 'You don\'t have enough money', false);
             return;
         }
 
@@ -98,6 +114,11 @@ export class GameSocket {
         const playerData = this.players.get(player.name);
         const room = this.rooms.find(room => room.id === roomId);
 
+        if (playerData.balance < room.bet) {
+            this.clientNotify(player, 'You don\'t have enough money', false);
+            return;
+        }
+
         if (!room) {
             this.clientNotify(player, 'Room not found', false);
             return;
@@ -112,7 +133,6 @@ export class GameSocket {
             this.clientNotify(player, 'You are already in room', false);
             return;
         }
-        // this.playersInRoom.set(playerData.id, player);
         this.players.get(player.name).bet = room.bet;
         this.players.get(player.name).roomId = room.id;
         room.players.push(player.name);
@@ -137,6 +157,10 @@ export class GameSocket {
     playerUpdate(player) {
         let updatePlayer = new Player(player.name, player.balance, 0, player.id);
         player.handle.send(JSON.stringify({ eventName: 'player.update', payload: updatePlayer }))
+        this.stopGame(player);
+    }
+
+    stopGame = (player) => {
         player.handle.send(JSON.stringify({ eventName: 'stop.game' }))
     }
 
@@ -163,7 +187,7 @@ export class GameSocket {
                 let player = this.players.get(target);
                 if (player.name == winnerName) {
                     this.clientNotify(player.handle, 'You win', true);
-                    player.balance += room.bet;
+                    player.balance += parseInt(room.bet);
                 } else {
                     player.balance -= room.bet;
                     this.clientNotify(player.handle, 'You lose', false);
