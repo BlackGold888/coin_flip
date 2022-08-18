@@ -26,7 +26,7 @@ function App() {
     };
 
     const setConnection = () => {
-        setSocket(new WebSocket('ws://localhost:3000/chat'));
+        setSocket(new WebSocket('ws://localhost:3000/'));
     }
 
     return (
