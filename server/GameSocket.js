@@ -43,6 +43,7 @@ export class GameSocket {
         player.on('create.room', this.createRoom);
         player.on('join.room', this.joinRoom);
         player.on('make.choose', this.makeChoose);
+        player.on('game.stop', this.playerExitRoom);
     };
 
     playerLogin = (player) => {
@@ -153,15 +154,35 @@ export class GameSocket {
         player2.handle.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[1], opponent: players[0] } }));
     }
 
-
-    playerUpdate(player) {
+    playerUpdate = (player, winner) => {
         let updatePlayer = new Player(player.name, player.balance, 0, player.id);
         player.handle.send(JSON.stringify({ eventName: 'player.update', payload: updatePlayer }))
-        this.stopGame(player);
+        // this.stopGame(player);
     }
 
     stopGame = (player) => {
         player.handle.send(JSON.stringify({ eventName: 'stop.game' }))
+    }
+
+    setFlip = (player, winner) => {
+        console.log(player.name);
+         player.handle.send(JSON.stringify({ eventName: 'set.flip', payload: winner }))
+    }
+
+    playerExitRoom = (player) => {
+        let room = this.rooms.find(room => room.players.includes(player.name));
+        if (room) {
+            room.players.forEach(playerName => {
+                let target = this.players.get(playerName);
+                this.clientNotify(target.handle, 'Player leave from room', false);
+                this.stopGame(target)
+            })
+
+            let rooms = this.rooms.filter(r => r.id != room.id);
+
+            this.rooms = [...rooms];
+            this.updateRooms()
+        }
     }
 
     makeChoose = (player, data) => {
@@ -193,13 +214,11 @@ export class GameSocket {
                     this.clientNotify(player.handle, 'You lose', false);
                 }
 
+                this.setFlip(player, winner);
+
                 this.playerUpdate(player)
             });
-
-            let rooms = this.rooms.filter(r => r.id != room.id);
-
-            this.rooms = [...rooms];
-            this.updateRooms()
+            room.clearChoose();
         }
     }
 }

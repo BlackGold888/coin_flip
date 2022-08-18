@@ -14,6 +14,7 @@ function GameArea({ player, setPlayer, socket }) {
     const [rooms, setRooms] = useState([]);
     const [emitter, setEmitter] = useState(new Emitter());
     const [opponent, setOpponent] = useState(null);
+    const [flip, setFlip] = useState(1);
 
     const changeBet = (e) => setPlayer({ ...player, bet: e.target.value });
 
@@ -36,6 +37,16 @@ function GameArea({ player, setPlayer, socket }) {
 
         emitter.on('player.update', (data) => {
             setPlayer(data);
+        });
+
+        emitter.on('set.flip', (data) => {
+            setFlip(data);
+            setTimeout(() => {
+                const res = window.confirm('Do you want to play again?');
+                if (!res) {
+                    socket.send(JSON.stringify({ eventName: 'game.stop', payload: player.name }));
+                }
+            }, 1000);
         });
 
         emitter.on('update.rooms', (data) => {
@@ -128,6 +139,7 @@ function GameArea({ player, setPlayer, socket }) {
             player={ player }
             opponent={ opponent }
             socket={ socket }
+            flip={ flip }
         />;
     } else {
         return (<div id={ 'game' }>

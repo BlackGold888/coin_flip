@@ -28,6 +28,10 @@ export class Room {
         return null;
     }
 
+    clearChoose = () => {
+        this.choose = {};
+    }
+
     getWinner = () => {
         let winnerNum = Math.floor(Math.random() * this.maxPlayers);
 
