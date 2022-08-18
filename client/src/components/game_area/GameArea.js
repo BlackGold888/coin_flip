@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Header from './header';
 import './assets/game.css';
 import Nav from './nav';
-import { emitter as Emitter } from '../../Emitter';
+import { Emitter } from '../../Emitter';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Room from './Room';
@@ -12,6 +12,7 @@ function GameArea({ player, setPlayer, socket }) {
     const [start, setStart] = useState(false);
     const [online, setOnline] = useState(0);
     const [rooms, setRooms] = useState([]);
+    const [emitter, setEmitter] = useState(new Emitter())
 
     const changeBet = (e) => setPlayer({ ...player, bet: e.target.value });
     const changeBalance = (balance) => setPlayer({ ...player, balance });
@@ -23,7 +24,6 @@ function GameArea({ player, setPlayer, socket }) {
             id: player.id,
             bet: player.bet,
         };
-        console.log(newRoom);
         socket.send(JSON.stringify({ eventName: 'create.room', payload: newRoom }));
     };
 
@@ -32,24 +32,38 @@ function GameArea({ player, setPlayer, socket }) {
             navigate('/');
         }
 
-        Emitter.on('online.update', (data) => {
+        emitter.on('online.update', (data) => {
             console.log('Online update', JSON.parse(data));
             setOnline(JSON.parse(data));
         });
 
-        Emitter.on('update.rooms', (data) => {
+        emitter.on('update.rooms', (data) => {
+            console.log('==========================');
+            console.log(data);
             setRooms(data);
         });
 
-        Emitter.on('notify', (data) => {
+        emitter.on('notify', (data) => {
             notify(data);
         });
 
-        Emitter.on('start.game', (data) => {
+        emitter.on('start.game', (data) => {
             startGame(data);
         });
 
+        emitter.on('player.init', (data) => {
+            playerInit(data);
+        });
+
+        emitter.on('player.register.fail', () => {
+            navigate('/');
+        });
+
     }, []);
+
+    const playerInit = (data) => {
+        setPlayer(data)
+    }
 
 
     useEffect(() => {
@@ -58,17 +72,16 @@ function GameArea({ player, setPlayer, socket }) {
                 console.log('Message', message);
                 const parsed = JSON.parse(message.data);
                 const { eventName, payload } = parsed;
-                Emitter.emit(eventName, payload);
+                emitter.emit(eventName, payload);
             }
 
             socket.onopen = () => {
                 console.log('Socket open');
-                socket.send(JSON.stringify({ eventName: 'player.login', payload: player }));
+                socket.send(JSON.stringify({ eventName: 'player.register', payload: player.name }));
             }
 
             socket.close = () => {
                 console.log('Socket closed');
-                socket.send(JSON.stringify({ eventName: 'player.logout', payload: player }));
             }
         }
     }, [socket])
@@ -86,12 +99,12 @@ function GameArea({ player, setPlayer, socket }) {
     }
 
     const renderJoinRoom = (room) => {
-        if (!room.players[1] && room.players[0].id !== player.id) {
+        if (room.players[0] !== player.name && !room.players[1]) {
             return (<button onClick={() => joinRoom(room.id)}>Join Room</button>);
-        }else if(room.players[1]){
+        }else if(room.players[1] || room.players[1] == player.name){
             return (
                 <>
-                    <span className={ 'owner-name' }>Name { room.players[1]?.name }</span>
+                    <span className={ 'owner-name' }>Name { room.players[1] }</span>
                     <span className={ 'room-bet' }>Bet { room.bet }$</span>
                 </>)
         }else{
@@ -109,8 +122,7 @@ function GameArea({ player, setPlayer, socket }) {
             return (<div id={ 'game' }>
                 <div className="container">
                     <Header
-                        name={ player.name }
-                        balance={ player.balance }
+                        player={ player }
                         online={ online }
                     />
                     <Nav
@@ -124,14 +136,14 @@ function GameArea({ player, setPlayer, socket }) {
                             { rooms.length > 0 ? rooms.map((room, index) =>
                                 <li key={ index } className={ 'rooms-item' }>
                                     <div className="owner">
-                                        <span className={ 'owner-name' }>Name { room.players[0]?.name }</span>
+                                        <span className={ 'owner-name' }>Name { room.players[0] }</span>
                                         <span className={ 'room-bet' }>Bet { room.bet }$</span>
                                     </div>
                                     <div className="room-logo"></div>
                                     <div className="enemy">
                                         {renderJoinRoom(room)}
                                     </div>
-                                </li>) : <div className="no-rooms">No rooms</div> }
+                                </li>) : <div className="no-rooms">No rooms { rooms.length} </div> }
                         </ul>
                     </div>
                 </div>

@@ -5,7 +5,6 @@ class Emitter {
     }
 
     on(eventName, callback) {
-        console.log('on', eventName);
         this.events[eventName] = this.events[eventName] || [];
         this.events[eventName].push(callback);
     }
@@ -16,6 +15,4 @@ class Emitter {
     }
 }
 
-const emitter = new Emitter();
-
-export { emitter };
+export { Emitter };

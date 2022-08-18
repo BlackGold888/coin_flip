@@ -18,49 +18,66 @@ export class GameSocket {
             player.emit(eventName, player, payload);
         });
 
+        player.on('close', () => {
+            const playerData = this.players.get(player.name);
+            const rooms = this.rooms.filter(room => room.id !== playerData.id);
+            this.rooms = [...rooms];
+            if (this.players.has(player.name)) {
+                this.players.delete(playerData.name);
+            }
+            this.onlineUpdate();
+            this.updateRooms();
+        });
+
         player.on('player.login', this.playerLogin);
+        player.on('player.register', this.playerRegister);
         player.on('create.room', this.createRoom);
         player.on('join.room', this.joinRoom);
-        player.on('close', () => this.playerLogout(player));
+
     };
 
-    playerLogin = (player, data) => {
-        const { name, balance, id } = data;
-        if (!this.players.has(player)) {
-            this.players.set(player, new Player(name, balance, 0, id));
-        }
-
+    playerLogin = (player) => {
         //Update online players
         this.onlineUpdate();
         this.updateRooms()
 
     };
 
-    playerLogout = (player) => {
-        const playerData = this.players.get(player);
-
-        const rooms = this.rooms.filter(room => room.id !== playerData.id);
-        this.rooms = [...rooms];
-        if (this.players.has(player)) {
-            this.players.delete(player);
+    playerRegister = (player, name) => {
+        console.log('asdasdasd');
+        if (this.players.has(name)) {
+            player.send(JSON.stringify({ eventName: 'player.register.fail' }))
+            return this.clientNotify(player, 'This name exist', false);
         }
-        this.onlineUpdate();
-        this.updateRooms();
+
+        const newPlayerData = new Player(name, 100, 0, this.players.size + 1);
+
+        this.players.set(name, {
+            player,
+            ...newPlayerData,
+        });
+
+        player.name = name;
+        console.log(player.name);
+
+
+        player.send(JSON.stringify({ eventName: 'player.init', payload: newPlayerData }));
+
+        this.playerLogin(player);
+        this.clientNotify(player, 'Your account created', true);
     }
 
     createRoom = (player, data) => {
-        console.log('create room');
         const { id, bet } = data;
-        const isRoomExist = this.rooms.find(room => room.id === id);
+        const isRoomExist = this.rooms.find(room => room.id === id || room.players.includes(player.name));
 
         if (isRoomExist) {
             this.clientNotify(player, 'You are already in room', false);
             return;
         }
 
-        const target = this.players.get(player);
-        this.playersInRoom.set(id, player);
-        this.rooms.push(new Room(id, bet, target));
+        this.rooms.push(new Room(id, bet, player.name));
+        console.log(`${player.name} create room`);
         this.updateRooms();
     }
 
@@ -82,7 +99,7 @@ export class GameSocket {
 
     joinRoom = (player, data) => {
         const { roomId } = data;
-        const playerData = this.players.get(player);
+        const playerData = this.players.get(player.name);
         const room = this.rooms.find(room => room.id === roomId);
 
         if (!room) {
@@ -99,10 +116,10 @@ export class GameSocket {
             this.clientNotify(player, 'You are already in room', false);
             return;
         }
-        this.playersInRoom.set(playerData.id, player);
-        // this.players.get(player).bet = room.bet;
-        // this.players.get(player).roomId = room.id;
-        room.players.push(playerData);
+        // this.playersInRoom.set(playerData.id, player);
+        this.players.get(player.name).bet = room.bet;
+        this.players.get(player.name).roomId = room.id;
+        room.players.push(player.name);
         this.rooms = this.rooms.filter(room => room.id !== roomId);
         this.rooms.push(room);
         this.updateRooms();
@@ -112,11 +129,11 @@ export class GameSocket {
     }
 
     startGame = (room) => {
-        let players = room.players;
-        let player1 = this.playersInRoom.get(players[0].id);
-        let player2 = this.playersInRoom.get(players[1].id);
-
-        player1.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[0], opponent: players[1] } }));
-        player2.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[1], opponent: players[0] } }));
+        // let players = room.players;
+        // let player1 = this.playersInRoom.get(players[0].id);
+        // let player2 = this.playersInRoom.get(players[1].id);
+        //
+        // player1.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[0], opponent: players[1] } }));
+        // player2.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[1], opponent: players[0] } }));
     }
 }

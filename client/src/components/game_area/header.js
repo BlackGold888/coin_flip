@@ -1,17 +1,17 @@
 import React from 'react';
 
-function Header({name, balance, online }) {
+function Header({online, player }) {
     return (
         <div className="row header">
             <div className="game-header">
-                Welcome to coin flip game, players online: {online}
+                Welcome to coin flip game, players online: { online }
             </div>
             <div className="player-info">
                 <div className="player-name">
-                    { name }
+                    { player.name } # { player.id }
                 </div>
                 <div className="player-balance">
-                    Balance: { balance }
+                    Balance: { player.balance }
                 </div>
             </div>
         </div>
