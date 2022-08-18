@@ -6,7 +6,6 @@ export class GameSocket {
     constructor(server) {
         this.socket = new WebSocketServer({ server });
         this.players = new Map();
-        this.playersInRoom = new Map();
         this.rooms = [];
         this.socket.on('connection', this.onConnection);
     }
@@ -33,7 +32,7 @@ export class GameSocket {
         player.on('player.register', this.playerRegister);
         player.on('create.room', this.createRoom);
         player.on('join.room', this.joinRoom);
-
+        player.on('make.choose', this.makeChoose);
     };
 
     playerLogin = (player) => {
@@ -44,7 +43,6 @@ export class GameSocket {
     };
 
     playerRegister = (player, name) => {
-        console.log('asdasdasd');
         if (this.players.has(name)) {
             player.send(JSON.stringify({ eventName: 'player.register.fail' }))
             return this.clientNotify(player, 'This name exist', false);
@@ -53,12 +51,11 @@ export class GameSocket {
         const newPlayerData = new Player(name, 100, 0, this.players.size + 1);
 
         this.players.set(name, {
-            player,
+            handle: player,
             ...newPlayerData,
         });
 
         player.name = name;
-        console.log(player.name);
 
 
         player.send(JSON.stringify({ eventName: 'player.init', payload: newPlayerData }));
@@ -77,7 +74,6 @@ export class GameSocket {
         }
 
         this.rooms.push(new Room(id, bet, player.name));
-        console.log(`${player.name} create room`);
         this.updateRooms();
     }
 
@@ -129,11 +125,57 @@ export class GameSocket {
     }
 
     startGame = (room) => {
-        // let players = room.players;
-        // let player1 = this.playersInRoom.get(players[0].id);
-        // let player2 = this.playersInRoom.get(players[1].id);
-        //
-        // player1.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[0], opponent: players[1] } }));
-        // player2.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[1], opponent: players[0] } }));
+        let players = room.players;
+        let player1 = this.players.get(players[0]);
+        let player2 = this.players.get(players[1]);
+
+        player1.handle.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[0], opponent: players[1] } }));
+        player2.handle.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[1], opponent: players[0] } }));
+    }
+
+
+    playerUpdate(player) {
+        let updatePlayer = new Player(player.name, player.balance, 0, player.id);
+        player.handle.send(JSON.stringify({ eventName: 'player.update', payload: updatePlayer }))
+        player.handle.send(JSON.stringify({ eventName: 'stop.game' }))
+    }
+
+    makeChoose = (player, data) => {
+        let room = this.rooms.find(room => room.players.includes(player.name));
+
+        if (room.choose[player.name]) {
+            return this.clientNotify(player, 'You already choose', false);
+        }
+
+        let players = room.players;
+        let player1 = this.players.get(players[0]);
+        let player2 = this.players.get(players[1]);
+        if (player.name == players[0]) {
+            this.clientNotify(player2.handle, `${ player.name } make choose`, true);
+        }else{
+            this.clientNotify(player1.handle, `${ player.name } make choose`, true);
+        }
+
+        let winner = room.setChoose(player.name, data);
+        if (winner != null) {
+            let winnerName = room.players[winner];
+            room.players.forEach(target => {
+                let player = this.players.get(target);
+                if (player.name == winnerName) {
+                    this.clientNotify(player.handle, 'You win', true);
+                    player.balance += room.bet;
+                } else {
+                    player.balance -= room.bet;
+                    this.clientNotify(player.handle, 'You lose', false);
+                }
+
+                this.playerUpdate(player)
+            });
+
+            let rooms = this.rooms.filter(r => r.id != room.id);
+
+            this.rooms = [...rooms];
+            this.updateRooms()
+        }
     }
 }

@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     const navigate = useNavigate();
-    const [player, setPlayer] = useState({ name: null, balance: 0, id: 0, roomId: 0, bet: 0 });
+    const [player, setPlayer] = useState({ name: null, balance: 0,bet: 0, id: 0, roomId: 0, room: null, isReady: false  });
     const [name, setName] = useState('');
     const [socket, setSocket] = useState(null);
 
