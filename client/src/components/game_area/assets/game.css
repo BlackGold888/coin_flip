@@ -87,3 +87,18 @@
     display: flex;
     flex-direction: column;
 }
+
+@media only screen and (max-width: 425px){
+    .game-header, .container, .player-info{
+        width: 100%;
+    }
+
+    .rooms-item{
+        width: 100%;
+    }
+
+    .rooms-list{
+        width: 100%;
+        padding: 0;
+    }
+}
