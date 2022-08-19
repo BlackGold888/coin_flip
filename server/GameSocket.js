@@ -251,6 +251,8 @@ export class GameSocket {
                 this.clientNotify(player2.handle, 'No winner', true);
                 this.setFlip(player1, winner);
                 this.setFlip(player2, winner);
+                this.playerUpdate(player1);
+                this.playerUpdate(player2);
                 room.clearChoose();
                 return;
             }
