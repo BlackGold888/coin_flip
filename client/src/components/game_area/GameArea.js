@@ -128,6 +128,10 @@ function GameArea({ player, setPlayer, socket }) {
         setStart(false);
     };
 
+    const deleteRoom = (id) => {
+        socket.send(JSON.stringify({ eventName: 'delete.room', payload: { roomId: id } }));
+    }
+
     if (start) {
         return <Room
             player={ player }
@@ -155,6 +159,7 @@ function GameArea({ player, setPlayer, socket }) {
                                 <div className="owner">
                                     <span className={ 'owner-name' }>Name { room.players[0] }</span>
                                     <span className={ 'room-bet' }>Bet { room.bet }$</span>
+                                    {room.id == player.id ? <button onClick={() => deleteRoom(room.id)}>Delete</button> : ''}
                                 </div>
                                 <div className="room-logo"></div>
                                 <div className="enemy">

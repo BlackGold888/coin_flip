@@ -42,6 +42,7 @@ export class GameSocket {
         player.on('player.register', this.playerRegister);
         player.on('create.room', this.createRoom);
         player.on('join.room', this.joinRoom);
+        player.on('delete.room', this.deleteRoom);
         player.on('make.choose', this.makeChoose);
         player.on('game.stop', this.playerExitRoom);
     };
@@ -106,6 +107,20 @@ export class GameSocket {
         this.socket.clients.forEach(client => {
             client.send(JSON.stringify({ eventName: 'update.rooms', payload: this.rooms }));
         });
+    }
+
+    deleteRoom = (player, data) => {
+        const owner = this.players.get(player.name);
+
+        if (owner.id !== data.roomId) {
+            this.clientNotify(player, 'You are not owner of this room', false);
+            return;
+        }
+
+        const rooms = this.rooms.filter(room => room.id !== data.roomId);
+        this.rooms = [...rooms];
+        this.updateRooms();
+        this.clientNotify(player, 'Room deleted', true);
     }
 
     onlineUpdate = () => {
