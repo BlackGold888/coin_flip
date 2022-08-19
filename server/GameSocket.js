@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { Player } from './Player.js';
 import { Room } from './Room.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class GameSocket {
     constructor(server) {
@@ -19,19 +20,25 @@ export class GameSocket {
 
         player.on('close', () => {
             const playerData = this.players.get(player.name);
+
+            if (!playerData) return;
+
             const room = this.rooms.find(room => room.players.includes(playerData.name));
 
-            if (room.players.length > 1) {
+            if (room && room.players.length > 1) {
                 room.players.forEach(playerName => {
                     let target = this.players.get(playerName);
-                    this.clientNotify(target.handle, 'Room Owner Disconnected', false);
-                    this.stopGame(target)
+                    if (target) {
+                        this.clientNotify(target.handle, 'Room Owner Disconnected', false);
+                        this.stopGame(target)
+                    }
                 })
             }
 
             //Update rooms list
-            const rooms = this.rooms.filter(room => room.id !== playerData.id);
+            const rooms = this.rooms.filter(room => !room.players.includes(playerData.name));
             this.rooms = [...rooms];
+
             if (this.players.has(player.name)) {
                 this.players.delete(playerData.name);
             }
@@ -60,8 +67,8 @@ export class GameSocket {
             player.send(JSON.stringify({ eventName: 'player.register.fail' }))
             return this.clientNotify(player, 'This name exist', false);
         }
-
-        const newPlayerData = new Player(name, 100, 0, this.players.size + 1);
+        let uuid = uuidv4();
+        const newPlayerData = new Player(name, 100, 0, uuid);
 
         this.players.set(name, {
             handle: player,
