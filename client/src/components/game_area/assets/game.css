@@ -7,7 +7,7 @@
 }
 
 .container {
-    width: 100%;
+    width: 80%;
     height: 60%;
     display: flex;
     flex-direction: column;
@@ -35,7 +35,7 @@
 .player-info {
     background-color: #d9d9d9;
     padding: 20px;
-    width: 40%;
+    width: 30%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
