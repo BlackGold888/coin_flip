@@ -19,10 +19,9 @@ export class GameSocket {
 
         player.on('close', () => {
             const playerData = this.players.get(player.name);
-            const rooms = this.rooms.filter(room => room.id !== playerData.id);
-            const room = this.rooms.filter(room => room.id == playerData.id);
+            const room = this.rooms.find(room => room.players.includes(playerData.name));
 
-            if (room.players > 1) {
+            if (room.players.length > 1) {
                 room.players.forEach(playerName => {
                     let target = this.players.get(playerName);
                     this.clientNotify(target.handle, 'Room Owner Disconnected', false);
@@ -30,6 +29,8 @@ export class GameSocket {
                 })
             }
 
+            //Update rooms list
+            const rooms = this.rooms.filter(room => room.id !== playerData.id);
             this.rooms = [...rooms];
             if (this.players.has(player.name)) {
                 this.players.delete(playerData.name);

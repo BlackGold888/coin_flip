@@ -27,7 +27,7 @@ function Room({ player, opponent, socket, flip, changeIsReady }) {
 
                 </div>) }
                 <div className="row">
-                    <button className={'exit'} onClick={exitGame}>Exit</button>
+                    { player.isReady ? (null) : (<button className={'exit'} onClick={exitGame}>Exit</button>) }
                 </div>
             </div>
             <div className="coin">
