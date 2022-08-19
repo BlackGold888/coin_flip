@@ -209,8 +209,10 @@ export class GameSocket {
             this.updateRooms()
         }
     }
-
-    makeChoose = (player, data) => {
+    delay = (ms) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    makeChoose = async (player, data) => {
         let room = this.rooms.find(room => room.players.includes(player.name));
         let playerData = this.players.get(player.name);
         if (room.bet > playerData.balance) {
@@ -235,6 +237,18 @@ export class GameSocket {
         let winner = room.setChoose(player.name, data);
         if (winner != null) {
             let winnerName = room.players[winner];
+
+            if (!winnerName) {
+                this.clientNotify(player1.handle, 'No winner', true);
+                this.clientNotify(player2.handle, 'No winner', true);
+                this.setFlip(player1, winner);
+                this.setFlip(player2, winner);
+                room.clearChoose();
+                return;
+            }
+
+            await this.delay(3000);
+
             room.players.forEach(target => {
                 let player = this.players.get(target);
                 if (player.name == winnerName) {
@@ -246,8 +260,7 @@ export class GameSocket {
                 }
 
                 this.setFlip(player, winner);
-
-                this.playerUpdate(player)
+                this.playerUpdate(player);
             });
             room.clearChoose();
         }

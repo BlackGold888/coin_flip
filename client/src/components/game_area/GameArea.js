@@ -17,6 +17,7 @@ function GameArea({ player, setPlayer, socket }) {
     const [flip, setFlip] = useState(1);
 
     const changeBet = (e) => setPlayer({ ...player, bet: e.target.value });
+    const changeIsReady = (status) => setPlayer({ ...player, isReady: status });
 
     const createRoom = () => {
         let newRoom = {
@@ -138,6 +139,7 @@ function GameArea({ player, setPlayer, socket }) {
             opponent={ opponent }
             socket={ socket }
             flip={ flip }
+            changeIsReady={ changeIsReady }
         />;
     } else {
         return (<div id={ 'game' }>

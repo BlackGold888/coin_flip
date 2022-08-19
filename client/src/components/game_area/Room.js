@@ -3,10 +3,11 @@ import './assets/room.css';
 import coin_0 from './assets/img/0.png';
 import coin_1 from './assets/img/1.png';
 
-function Room({ player, opponent, socket, flip }) {
+function Room({ player, opponent, socket, flip, changeIsReady }) {
 
     const makeChoose = (choose) => {
-        socket.send(JSON.stringify({ eventName: 'make.choose', payload: choose }))
+        socket.send(JSON.stringify({ eventName: 'make.choose', payload: choose }));
+        changeIsReady(!player.isReady);
     }
 
     const exitGame = () => {
