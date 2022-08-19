@@ -9,6 +9,10 @@ function Room({ player, opponent, socket, flip }) {
         socket.send(JSON.stringify({ eventName: 'make.choose', payload: choose }))
     }
 
+    const exitGame = () => {
+        socket.send(JSON.stringify({ eventName: 'game.stop', payload: player.name }));
+    }
+
     return (
         <div id={ 'room-player' }>
             <div className="col-6 player1">
@@ -19,7 +23,11 @@ function Room({ player, opponent, socket, flip }) {
                 { player.isReady ? (null) : (<div className="choose-buttons">
                     <button onClick={() => makeChoose(1)}>1 Орёл</button>
                     <button onClick={() => makeChoose(0)}>0 Решко</button>
+
                 </div>) }
+                <div className="row">
+                    <button className={'exit'} onClick={exitGame}>Exit</button>
+                </div>
             </div>
             <div className="coin">
                 <img src={flip ? coin_1 : coin_0} alt=""/>

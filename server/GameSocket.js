@@ -80,6 +80,10 @@ export class GameSocket {
         const isRoomExist = this.rooms.find(room => room.id === id || room.players.includes(player.name));
         const playerData = this.players.get(player.name);
 
+        if (bet <= 0) {
+            return this.clientNotify(player, 'Bet must be greater than 0', false);
+        }
+
         if (isRoomExist) {
             this.clientNotify(player, 'You are already in room', false);
             return;
@@ -115,6 +119,11 @@ export class GameSocket {
         const playerData = this.players.get(player.name);
         const room = this.rooms.find(room => room.id === roomId);
 
+        if (this.rooms.find(room => room.id === playerData.id)) {
+            this.clientNotify(player, 'You have created room', false);
+            return;
+        }
+
         if (playerData.balance < room.bet) {
             this.clientNotify(player, 'You don\'t have enough money', false);
             return;
@@ -134,6 +143,7 @@ export class GameSocket {
             this.clientNotify(player, 'You are already in room', false);
             return;
         }
+
         this.players.get(player.name).bet = room.bet;
         this.players.get(player.name).roomId = room.id;
         room.players.push(player.name);

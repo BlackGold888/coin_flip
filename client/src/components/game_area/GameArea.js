@@ -41,12 +41,6 @@ function GameArea({ player, setPlayer, socket }) {
 
         emitter.on('set.flip', (data) => {
             setFlip(data);
-            setTimeout(() => {
-                const res = window.confirm('Do you want to play again?');
-                if (!res) {
-                    socket.send(JSON.stringify({ eventName: 'game.stop', payload: player.name }));
-                }
-            }, 1000);
         });
 
         emitter.on('update.rooms', (data) => {
