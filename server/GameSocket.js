@@ -212,6 +212,12 @@ export class GameSocket {
 
     makeChoose = (player, data) => {
         let room = this.rooms.find(room => room.players.includes(player.name));
+        let playerData = this.players.get(player.name);
+        if (room.bet > playerData.balance) {
+            this.clientNotify(player, 'You don\'t have enough money', false);
+            this.playerExitRoom(player);
+            return;
+        }
 
         if (room.choose[player.name]) {
             return this.clientNotify(player, 'You already choose', false);

@@ -18,7 +18,7 @@ function Room({ player, opponent, socket, flip }) {
             <div className="col-6 player1">
                 <div className="player-info">
                     <span>{ player.name }</span>
-                    <span>#{ player.id }</span>
+                    <span>Balance: { player.balance }$</span>
                 </div>
                 { player.isReady ? (null) : (<div className="choose-buttons">
                     <button onClick={() => makeChoose(1)}>1 Орёл</button>
