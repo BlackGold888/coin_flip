@@ -16,7 +16,7 @@ function GameArea({ player, setPlayer, socket }) {
     const [opponent, setOpponent] = useState(null);
     const [flip, setFlip] = useState(1);
 
-    const changeBet = (e) => setPlayer({ ...player, bet: e.target.value });
+    const changeBet = (e) => setPlayer({ ...player, bet: parseInt(e.target.value) ? parseInt(e.target.value) : 0 });
     const changeIsReady = (status) => setPlayer({ ...player, isReady: status });
 
     const createRoom = () => {

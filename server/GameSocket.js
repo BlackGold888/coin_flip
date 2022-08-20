@@ -29,6 +29,7 @@ export class GameSocket {
                 room.players.forEach(playerName => {
                     let target = this.players.get(playerName);
                     if (target) {
+                        this.playerUpdate(target, 0);
                         this.clientNotify(target.handle, 'Room Owner Disconnected', false);
                         this.stopGame(target)
                     }
@@ -88,9 +89,8 @@ export class GameSocket {
         const { id, bet } = data;
         const isRoomExist = this.rooms.find(room => room.id === id || room.players.includes(player.name));
         const playerData = this.players.get(player.name);
-
-        if (bet <= 0) {
-            return this.clientNotify(player, 'Bet must be greater than 0', false);
+        if (parseInt(bet) < 1) {
+            return this.clientNotify(player, 'Bet must be greater than 1 or equal', false);
         }
 
         if (isRoomExist) {
@@ -187,19 +187,20 @@ export class GameSocket {
         player2.handle.send(JSON.stringify({ eventName: 'start.game', payload: { player: players[1], opponent: players[0] } }));
     }
 
-    playerUpdate = (player, winner) => {
+    playerUpdate = (player) => {
         let updatePlayer = new Player(player.name, player.balance, 0, player.id);
         player.handle.send(JSON.stringify({ eventName: 'player.update', payload: updatePlayer }))
         // this.stopGame(player);
     }
 
     stopGame = (player) => {
+        this.playerUpdate(player)
         player.handle.send(JSON.stringify({ eventName: 'stop.game' }))
     }
 
     setFlip = (player, winner) => {
         console.log(player.name);
-         player.handle.send(JSON.stringify({ eventName: 'set.flip', payload: winner }))
+        player.handle.send(JSON.stringify({ eventName: 'set.flip', payload: winner }))
     }
 
     playerExitRoom = (player) => {
