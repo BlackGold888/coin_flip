@@ -31,7 +31,7 @@ function Room({ player, opponent, socket, flip, changeIsReady }) {
                 </div>
             </div>
             <div className="coin">
-                <img src={flip ? coin_0 : coin_1} alt=""/>
+                <img src={flip ? coin_1 : coin_0} alt=""/>
             </div>
             { opponent ? (<div className="col-6 opponent">
                 <div className="player-info">
