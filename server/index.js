@@ -9,7 +9,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const gameSocket = new GameSocket(server);
 
-server.listen(3000, () => {
+server.listen(3002, () => {
     console.log('Server started on port 3000');
 });
 
